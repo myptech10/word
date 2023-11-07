@@ -88,41 +88,70 @@ int hasReadPerms(char* file_name) {
 int count_words(char* fileName) {
     anyValidFiles = 1;
 
-    // char buffer[1024];
-    // int fd;
-    // ssize_t bytes_read;  // number of characters/bytes read 
-    // //int word_count = 0;
-    // //char store_word[100]; //store words in array
-    // //int word_length = 0;
+    char buffer[1024];
+int fd;
+ssize_t bytes_read;  // number of characters/bytes read 
+int word_count = 0;
+char store_word[100]; //store words in array
+char store_dash[100]; //store words in array
+
+int word_length = 0;
 
 
-    // fd = open("sentence.txt", O_RDONLY);
-    // if (fd == -1) {
-    //     perror("Error opening file");
-    //     return 1;
-    // }
 
-    // while ((bytes_read = read(fd, buffer, sizeof(buffer)) > 0)) {
-    //     for (ssize_t i = 0; i < bytes_read; i++) { //for each word 
-        
-    //         char c = buffer[i];
+fd = open("sentence.txt", O_RDONLY);
+    if (fd == -1) {
+        perror("Error opening file");
+        return 1;
+    }
 
-    //         // if (c == ' ' || !isalnum(c)) {
-    //         //         if (word_length > 0) {
-    //         //             // Null-terminate the word
-    //         //             store_word[word_length] = '\0';
-                        
-    //         //         }
-    //         //         else{
-                    
-    //         //         }
-    //         // }
+int wordIndex = 0;
+int dash = 0;
+int wordDone = 0;
 
-    //         printf("%d", c);
-    //     }
-    // }
+  while ((bytes_read = read(fd, buffer, 1024)) > 0) {
+        for (int i = 0; i < bytes_read; i++) {
+            if (buffer[i] != ' ' && buffer[i] != '\n' && buffer[i] != '!' && buffer[i] != '?' && buffer[i] != ',' && buffer[i] != '"' && buffer[i] != '.')  {
+                //printf( "%c",  buffer[i]);
+                if ((buffer[i] == '-' && buffer[i+1] == '-')){
+                    i++;
+                    dash = 2;
+                    store_word[wordIndex] = '\0'; // Null-terminate the word
+                    printf("Wordssss: %s\n", store_word);
+                    wordIndex = 0;
 
-    return 0;
+ 
+                    }
+                else if(isdigit(buffer[i])){
+                        if(wordIndex==0){
+                        store_word[wordIndex] = '\0'; 
+    
+                        } else{
+                         printf("Word: %s\n", store_word); }
+                         wordIndex = 0;
+                         continue;
+                }
+
+                else{
+                //store character in array
+                store_word[wordIndex] = buffer[i];
+                wordIndex++;     
+                } 
+            } 
+            
+            else { //a weird character 
+                if (wordIndex > 0) {
+                    store_word[wordIndex] = '\0'; // Null-terminate the word
+                    printf("Word: %s\n", store_word);
+                    wordIndex = 0;
+                }
+            }
+        }
+    }
+
+ close(fd);
+   return 0;
+
 }
 
 void recurseDirectory(char* file_name) {   
