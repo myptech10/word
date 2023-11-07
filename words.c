@@ -18,7 +18,7 @@ typedef struct _Node {
 } Node;
 
 #define ARRAY_LENGTH 100
-//static Node* map_of_words[ARRAY_LENGTH];
+static Node* map_of_words[ARRAY_LENGTH];
 static int anyValidFiles = 0;
 
 // write desc later
@@ -85,73 +85,112 @@ int hasReadPerms(char* file_name) {
     }
 }
 
-void recurseDirectory(char* file_name) {
-    DIR* current = opendir(file_name);
-    if(current == NULL){
-        fprintf(stderr, "Error: Cannot read from directory %s: %s\n", file_name, strerror(errno));
+int count_words(char* fileName) {
+    anyValidFiles = 1;
+
+    // char buffer[1024];
+    // int fd;
+    // ssize_t bytes_read;  // number of characters/bytes read 
+    // //int word_count = 0;
+    // //char store_word[100]; //store words in array
+    // //int word_length = 0;
+
+
+    // fd = open("sentence.txt", O_RDONLY);
+    // if (fd == -1) {
+    //     perror("Error opening file");
+    //     return 1;
+    // }
+
+    // while ((bytes_read = read(fd, buffer, sizeof(buffer)) > 0)) {
+    //     for (ssize_t i = 0; i < bytes_read; i++) { //for each word 
+        
+    //         char c = buffer[i];
+
+    //         // if (c == ' ' || !isalnum(c)) {
+    //         //         if (word_length > 0) {
+    //         //             // Null-terminate the word
+    //         //             store_word[word_length] = '\0';
+                        
+    //         //         }
+    //         //         else{
+                    
+    //         //         }
+    //         // }
+
+    //         printf("%d", c);
+    //     }
+    // }
+
+    return 0;
+}
+
+void recurseDirectory(char* file_name) {   
+    if (chdir(file_name) != 0) {
+        fprintf(stderr, "Error: Cannot move into directory %s: %s\n", file_name, strerror(errno));
         return;
     }
 
-    if(closedir(current) != 0){
+    DIR* current_dir = opendir(".");
+    if (current_dir == NULL) {
+        fprintf(stderr, "Error: Cannot read from directory %s: %s\n", file_name, strerror(errno));
+        return;
+    }
+    
+    struct dirent* current_file;
+    do {
+        current_file = readdir(current_dir);
+        if (current_file != NULL) {
+            if (strcmp(current_file->d_name, ".") == 0 || strcmp(current_file->d_name, "..") == 0) {
+                continue;
+            } else {
+                if (isDirectory(current_file->d_name) && hasReadPerms(current_file->d_name)) {
+                    printf("dir %s\n", current_file->d_name); // debug
+                    recurseDirectory(current_file->d_name);
+                } else if (isTextFile(current_file->d_name) && hasReadPerms(current_file->d_name)) {
+                    printf("%s\n", current_file->d_name); // debug
+                    count_words(current_file->d_name);
+                }
+            }
+        } else {
+            if (errno != 0) {
+                fprintf(stderr, "Error traversing directory %s: %s\n", file_name, strerror(errno));
+                return;
+            }
+            break;
+        }
+    } while(1);
+
+
+    if(closedir(current_dir) != 0){
         fprintf(stderr, "Error: Cannot close directory %s: %s\n", file_name, strerror(errno));
     }
+    if(chdir("..") != 0) {
+        fprintf(stderr, "Error: Cannot move out of directory %s: %s\n", file_name, strerror(errno));
+    }
+
     return;
-}
-
-int count_words(){
-    anyValidFiles = 1;
-
-    char buffer[1024];
-    int fd;
-    ssize_t bytes_read;  // number of characters/bytes read 
-    //int word_count = 0;
-    //char store_word[100]; //store words in array
-    //int word_length = 0;
-
-
-    fd = open("sentence.txt", O_RDONLY);
-    if (fd == -1) {
-        perror("Error opening file");
-        return 1;
-    }
-
-    while ((bytes_read = read(fd, buffer, sizeof(buffer)) > 0)) {
-        for (ssize_t i = 0; i < bytes_read; i++) { //for each word 
-        
-            char c = buffer[i];
-
-            // if (c == ' ' || !isalnum(c)) {
-            //         if (word_length > 0) {
-            //             // Null-terminate the word
-            //             store_word[word_length] = '\0';
-                        
-            //         }
-            //         else{
-                    
-            //         }
-            // }
-
-            printf("%d", c);
-        }
-    }
-
-    return 0;
 }
 
 int main(int argc, char* argv[]) {
     for(int i = 1; i < argc; i++){
         //printf("Argument %d: %s\n", i, argv[i]); //debug
-        
         if (fileExists(argv[i])) {
             if (isDirectory(argv[i]) && hasReadPerms(argv[i])) {
-                printf("directory: %s\n", argv[i]);
+                printf("dir %s\n", argv[i]); // debug
                 recurseDirectory(argv[i]);
             } else if (isTextFile(argv[i]) && hasReadPerms(argv[i])) {
-                printf("text file: %s\n", argv[i]);
-                //count_words(argv[i]);
+                printf("%s\n", argv[i]); // debug
+                count_words(argv[i]);
             }
         }
     }
+
+    //debug
+    // char buf[200];
+    // printf("%s\n", getcwd(buf, 200));
+
+
 
     if(anyValidFiles) {
         // sort and print output

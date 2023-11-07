@@ -7,6 +7,10 @@ UNCLEAR:
     - what abt a file whose name IS ".txt"?
 - error handling: if we encounter an invalid file, do we stop the whole program or continue evaluating every other file?
     - what to do if all arguments are invalid?
+- used chdir to recursively open the current working directory so it would be easier to run wordcount as a separate function without dealing with filepaths, is this ok?
+
+
+
 
 part 1: need file IO that scans files in sequence & opens directories recursively
 - need to learn abt file IO if you open a file in a method does it stay open?
