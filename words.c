@@ -4,6 +4,8 @@
 #include <fcntl.h>
 #include <string.h>
 #include <ctype.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 typedef struct _Node {
     char* word;
@@ -12,7 +14,7 @@ typedef struct _Node {
 } Node;
 
 #define ARRAY_LENGTH 100
-static Node* map_of_words[ARRAY_LENGTH];
+//static Node* map_of_words[ARRAY_LENGTH];
 
 static int hash(char* word) {
     int length = 5;
@@ -33,15 +35,35 @@ static int hash(char* word) {
 }
 
 int main(int argc, char* argv[]) {
+    for(int i = 1; i < argc; i++){
+        printf("Argument %d: %s\n", i, argv[i]); //debug
+        
+        struct stat file_buffer;
+        int status = stat(argv[i], &file_buffer);
 
+        if (status == 0) {  // does the file exist
+            if (S_ISDIR(file_buffer.st_mode)) { // is it a directory
+                printf("is directory\n");
+            } else {
+                if (strlen(argv[i]) > 4) { // is it long enough to be a .txt
+                    char extension[5];
+                    memcpy(extension, argv[i]+(strlen(argv[i])-4), 5);
+                    printf("%s\n", extension); // debug
 
-    for(int i = 0; i < argc; i++){
-        printf("%s\n", argv[i]);
+                    if (strcmp(extension, ".txt") == 0) {   // is it a .txt
+                        printf("is text file\n");
+                        
+                    } else {
+                        fprintf(stderr, "Error opening %s, not a .txt file\n", argv[i]);
+                    }
+                } else {
+                    fprintf(stderr, "Error opening %s, not a .txt file\n", argv[i]);
+                }                
+            }
+        } else {
+            fprintf(stderr, "Error opening %s, %s\n", argv[i], strerror(errno));
+        }
     }
-
-    hash("hel");
-
-
 
     return 0;
 }
@@ -55,8 +77,8 @@ int count_words(){
     int fd;
     ssize_t bytes_read;  // number of characters/bytes read 
     //int word_count = 0;
-    char store_word[100]; //store words in array
-    int word_length = 0;
+    //char store_word[100]; //store words in array
+    //int word_length = 0;
 
 
     fd = open("sentence.txt", O_RDONLY);
