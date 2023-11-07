@@ -2,6 +2,12 @@
 
 delete before turning in:
 
+UNCLEAR:
+- should we be able to process other files containing character data that don't end in txt or only txt files?
+    - what abt a file whose name IS ".txt"?
+- error handling: if we encounter an invalid file, do we stop the whole program or continue evaluating every other file?
+    - what to do if all arguments are invalid?
+
 part 1: need file IO that scans files in sequence & opens directories recursively
 - need to learn abt file IO if you open a file in a method does it stay open?
 part 2: call a method that processes the file and counts words for each file

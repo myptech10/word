@@ -1,11 +1,15 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
-#include <ctype.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <dirent.h>
+#include <sys/types.h>
+
+// do we really need all of these?
+// #include <stdlib.h>
+// #include <ctype.h>
 
 typedef struct _Node {
     char* word;
@@ -15,7 +19,9 @@ typedef struct _Node {
 
 #define ARRAY_LENGTH 100
 //static Node* map_of_words[ARRAY_LENGTH];
+static int anyValidFiles = 0;
 
+// write desc later
 static int hash(char* word) {
     int length = 5;
     if(strlen(word) < 5) {
@@ -29,50 +35,72 @@ static int hash(char* word) {
     }
 
     ascii_values_sum /= ARRAY_LENGTH;
-
     return ascii_values_sum;
-
 }
 
-int main(int argc, char* argv[]) {
-    for(int i = 1; i < argc; i++){
-        printf("Argument %d: %s\n", i, argv[i]); //debug
-        
-        struct stat file_buffer;
-        int status = stat(argv[i], &file_buffer);
+int fileExists(char* file_name) {
+    if (access(file_name, F_OK) == 0) {
+        return 1;
+    } else {
+        fprintf(stderr, "Error opening %s, %s\n", file_name, strerror(errno));
+        return 0;
+    }
+}
 
-        if (status == 0) {  // does the file exist
-            if (S_ISDIR(file_buffer.st_mode)) { // is it a directory
-                printf("is directory\n");
-            } else {
-                if (strlen(argv[i]) > 4) { // is it long enough to be a .txt
-                    char extension[5];
-                    memcpy(extension, argv[i]+(strlen(argv[i])-4), 5);
-                    printf("%s\n", extension); // debug
+int isDirectory(char* file_name) {
+    struct stat file_buffer;
 
-                    if (strcmp(extension, ".txt") == 0) {   // is it a .txt
-                        printf("is text file\n");
-                        
-                    } else {
-                        fprintf(stderr, "Error opening %s, not a .txt file\n", argv[i]);
-                    }
-                } else {
-                    fprintf(stderr, "Error opening %s, not a .txt file\n", argv[i]);
-                }                
-            }
-        } else {
-            fprintf(stderr, "Error opening %s, %s\n", argv[i], strerror(errno));
+    if (stat(file_name, &file_buffer) != 0){
+        fprintf(stderr, "Error checking file type for %s: %s\n", file_name, strerror(errno));
+        return 0;
+    }
+ 
+    if (S_ISDIR(file_buffer.st_mode)) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int isTextFile(char* file_name) {
+    if(strlen(file_name) > 4) {
+        char extension[5];
+        memcpy(extension, file_name+strlen(file_name)-4, 5);
+
+        if (strcmp(extension, ".txt") == 0) {
+            return 1;
         }
     }
 
+    fprintf(stderr, "Error opening %s, not a .txt file\n", file_name);
     return 0;
 }
 
+int hasReadPerms(char* file_name) {
+    if(access(file_name, R_OK) == 0){
+        return 1;
+    }else{
+        fprintf(stderr, "Error: Cannot read %s: %s\n", file_name, strerror(errno));
+        return 0;
+    }
+}
 
+void recurseDirectory(char* file_name) {
+    DIR* current = opendir(file_name);
+    if(current == NULL){
+        fprintf(stderr, "Error: Cannot read from directory %s: %s\n", file_name, strerror(errno));
+        return;
+    }
 
-
+    if(closedir(current) != 0){
+        fprintf(stderr, "Error: Cannot close directory %s: %s\n", file_name, strerror(errno));
+    }
+    return;
+}
 
 int count_words(){
+    anyValidFiles = 1;
+
     char buffer[1024];
     int fd;
     ssize_t bytes_read;  // number of characters/bytes read 
@@ -108,4 +136,28 @@ int count_words(){
     }
 
     return 0;
+}
+
+int main(int argc, char* argv[]) {
+    for(int i = 1; i < argc; i++){
+        //printf("Argument %d: %s\n", i, argv[i]); //debug
+        
+        if (fileExists(argv[i])) {
+            if (isDirectory(argv[i]) && hasReadPerms(argv[i])) {
+                printf("directory: %s\n", argv[i]);
+                recurseDirectory(argv[i]);
+            } else if (isTextFile(argv[i]) && hasReadPerms(argv[i])) {
+                printf("text file: %s\n", argv[i]);
+                //count_words(argv[i]);
+            }
+        }
+    }
+
+    if(anyValidFiles) {
+        // sort and print output
+        return 0;
+    } else {
+        fprintf(stderr, "Error: No valid arguments to process\n");
+        return -1;
+    }
 }
