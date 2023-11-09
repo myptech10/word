@@ -6,37 +6,89 @@
 #include <errno.h>
 #include <dirent.h>
 #include <sys/types.h>
+#include <ctype.h>
+#include <stdlib.h>
 
-// do we really need all of these?
-// #include <stdlib.h>
-// #include <ctype.h>
 
-typedef struct _Node {
+typedef struct Node {
     char* word;
     int freq;
-    struct _Node* next;
+    struct Node* next;
 } Node;
 
-#define ARRAY_LENGTH 100
-static Node* map_of_words[ARRAY_LENGTH];
-static int anyValidFiles = 0;
+#define HASH_TABLE_SIZE 100 // not sure if this enough 
+Node* hash_table[HASH_TABLE_SIZE] = {NULL};
+
+
+//HASH FUNCTION
+
+unsigned int hash(char* word) {
+    unsigned int hash = 0;
+    while (*word) {
+        hash = (hash * 31) + *word; //convert into hash code  
+        word++;
+    }
+    return hash % HASH_TABLE_SIZE;
+}
+
+
+void insertHash(char* word) {
+    unsigned int index = hash(word);
+
+    // Search word in LL at index
+    Node* current = hash_table[index];
+    while (current != NULL) {
+        if (strcmp(current->word, word) == 0) {
+            current->freq++;
+            return;
+        }
+        current = current->next;
+    }
+    //create new if not fond 
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->word = strdup(word);
+    newNode->freq ++;
+    newNode->next = hash_table[index];
+    hash_table[index] = newNode;
+}
+
+void print() {
+    for (int i = 0; i < HASH_TABLE_SIZE; i++) {
+        Node* current = hash_table[i];
+        while (current != NULL) {
+            printf("%s -> %d\n", current->word, current->freq);
+            current = current->next;
+        }
+    }
+}
+
+
+// typedef struct _Node {
+//     char* word;
+//     int freq;
+//     struct _Node* next;
+// } Node;
+
+// #define ARRAY_LENGTH 100
+// static Node* map_of_words[ARRAY_LENGTH];
+// static int anyValidFiles = 0;
 
 // write desc later
-static int hash(char* word) {
-    int length = 5;
-    if(strlen(word) < 5) {
-        length = strlen(word);
-    }
+// static int hash(char* word) {
+//     int length = 5;
+//     if(strlen(word) < 5) {
+//         length = strlen(word);
+//     }
 
-    int ascii_values_sum = 0;
+//     int ascii_values_sum = 0;
 
-    for(int i = 0; i < length; i++){
-        ascii_values_sum += word[i];
-    }
+//     for(int i = 0; i < length; i++){
+//         ascii_values_sum += word[i];
+//     }
 
-    ascii_values_sum /= ARRAY_LENGTH;
-    return ascii_values_sum;
-}
+//     ascii_values_sum /= ARRAY_LENGTH;
+//     return ascii_values_sum;
+// }
 
 int fileExists(char* file_name) {
     if (access(file_name, F_OK) == 0) {
@@ -115,8 +167,9 @@ int wordDone = 0;
                 //printf( "%c",  buffer[i]);
                 if ((buffer[i] == '-' && buffer[i+1] == '-')){
                     i++;
-                    dash = 2;
+                    //dash = 2;
                     store_word[wordIndex] = '\0'; // Null-terminate the word
+                    insertHash(store_word);
                     printf("Wordssss: %s\n", store_word);
                     wordIndex = 0;
 
@@ -127,6 +180,7 @@ int wordDone = 0;
                         store_word[wordIndex] = '\0'; 
     
                         } else{
+                         insertHash(store_word);
                          printf("Word: %s\n", store_word); }
                          wordIndex = 0;
                          continue;
@@ -142,11 +196,13 @@ int wordDone = 0;
             else { //a weird character 
                 if (wordIndex > 0) {
                     store_word[wordIndex] = '\0'; // Null-terminate the word
+                    insertHash(store_word);
                     printf("Word: %s\n", store_word);
                     wordIndex = 0;
                 }
             }
         }
+          print();
     }
 
  close(fd);
