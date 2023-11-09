@@ -23,7 +23,6 @@ static int anyValidFiles = 0;
 
 
 //HASH FUNCTION
-
 unsigned int hash(char* word) {
     unsigned int hash = 0;
     while (*word) {
@@ -111,29 +110,24 @@ int hasReadPerms(char* file_name) {
     }
 }
 
-int count_words(char* fileName) {
+int count_words(char* file_name) {
     anyValidFiles = 1;
 
     char buffer[1024];
 int fd;
 ssize_t bytes_read;  // number of characters/bytes read 
-int word_count = 0;
 char store_word[100]; //store words in array
-char store_dash[100]; //store words in array
-
-int word_length = 0;
 
 
 
-fd = open("sentence.txt", O_RDONLY);
+
+fd = open(file_name, O_RDONLY);
     if (fd == -1) {
         perror("Error opening file");
         return 1;
     }
 
 int wordIndex = 0;
-int dash = 0;
-int wordDone = 0;
 
   while ((bytes_read = read(fd, buffer, 1024)) > 0) {
         for (int i = 0; i < bytes_read; i++) {
@@ -253,6 +247,7 @@ int main(int argc, char* argv[]) {
 
     if(anyValidFiles) {
         // sort and print output
+        print();
         return 0;
     } else {
         fprintf(stderr, "Error: No valid arguments to process\n");
