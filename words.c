@@ -170,9 +170,19 @@ int wordIndex = 0;
                 }
             }
         }
-          print();
+ 
     }
 
+
+     if (wordIndex > 0) {
+
+        store_word[wordIndex] = '\0';
+       // printf("Word: %s\n", store_word);
+
+        insertOrUpdateWord(store_word);
+    }
+
+         print();
  close(fd);
     return 0;
 
