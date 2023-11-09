@@ -10,14 +10,16 @@
 #include <stdlib.h>
 
 
-typedef struct Node {
+typedef struct _Node {
     char* word;
     int freq;
-    struct Node* next;
+    struct _Node* next;
 } Node;
 
 #define HASH_TABLE_SIZE 100 // not sure if this enough 
 Node* hash_table[HASH_TABLE_SIZE] = {NULL};
+// static Node* map_of_words[ARRAY_LENGTH];
+static int anyValidFiles = 0;
 
 
 //HASH FUNCTION
@@ -62,34 +64,6 @@ void print() {
     }
 }
 
-
-// typedef struct _Node {
-//     char* word;
-//     int freq;
-//     struct _Node* next;
-// } Node;
-
-// #define ARRAY_LENGTH 100
-// static Node* map_of_words[ARRAY_LENGTH];
-// static int anyValidFiles = 0;
-
-// write desc later
-// static int hash(char* word) {
-//     int length = 5;
-//     if(strlen(word) < 5) {
-//         length = strlen(word);
-//     }
-
-//     int ascii_values_sum = 0;
-
-//     for(int i = 0; i < length; i++){
-//         ascii_values_sum += word[i];
-//     }
-
-//     ascii_values_sum /= ARRAY_LENGTH;
-//     return ascii_values_sum;
-// }
-
 int fileExists(char* file_name) {
     if (access(file_name, F_OK) == 0) {
         return 1;
@@ -124,7 +98,7 @@ int isTextFile(char* file_name) {
         }
     }
 
-    fprintf(stderr, "Error opening %s, not a .txt file\n", file_name);
+    //fprintf(stderr, "Error opening %s, not a .txt file\n", file_name);
     return 0;
 }
 
@@ -206,7 +180,7 @@ int wordDone = 0;
     }
 
  close(fd);
-   return 0;
+    return 0;
 
 }
 
@@ -230,7 +204,7 @@ void recurseDirectory(char* file_name) {
                 continue;
             } else {
                 if (isDirectory(current_file->d_name) && hasReadPerms(current_file->d_name)) {
-                    printf("dir %s\n", current_file->d_name); // debug
+                    //printf("dir %s\n", current_file->d_name); // debug
                     recurseDirectory(current_file->d_name);
                 } else if (isTextFile(current_file->d_name) && hasReadPerms(current_file->d_name)) {
                     printf("%s\n", current_file->d_name); // debug
@@ -240,7 +214,7 @@ void recurseDirectory(char* file_name) {
         } else {
             if (errno != 0) {
                 fprintf(stderr, "Error traversing directory %s: %s\n", file_name, strerror(errno));
-                return;
+                errno = 0;
             }
             break;
         }
@@ -262,7 +236,7 @@ int main(int argc, char* argv[]) {
         //printf("Argument %d: %s\n", i, argv[i]); //debug
         if (fileExists(argv[i])) {
             if (isDirectory(argv[i]) && hasReadPerms(argv[i])) {
-                printf("dir %s\n", argv[i]); // debug
+                //printf("dir %s\n", argv[i]); // debug
                 recurseDirectory(argv[i]);
             } else if (isTextFile(argv[i]) && hasReadPerms(argv[i])) {
                 printf("%s\n", argv[i]); // debug
