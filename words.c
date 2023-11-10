@@ -17,10 +17,10 @@ typedef struct _Node {
 } Node;
 
 #define HASH_TABLE_SIZE 100 // not sure if this enough 
-Node* hash_table[HASH_TABLE_SIZE] = {NULL};
-// static Node* map_of_words[ARRAY_LENGTH];
+static Node* hash_table[HASH_TABLE_SIZE] = {NULL};
 static int anyValidFiles = 0;
-
+static int anyWordsRead = 0;
+ 
 
 //HASH FUNCTION
 unsigned int hash(char* word) {
@@ -34,6 +34,8 @@ unsigned int hash(char* word) {
 
 
 void insertHash(char* word) {
+    anyWordsRead = 1;
+
     unsigned int index = hash(word);
 
     // Search word in LL at index
@@ -54,18 +56,12 @@ void insertHash(char* word) {
 }
 
 void print() {
-     int empty = 1;
-    for (int i = 0; i < HASH_TABLE_SIZE; i++) {
+   for (int i = 0; i < HASH_TABLE_SIZE; i++) {
         Node* current = hash_table[i];
         while (current != NULL) {
-            empty = 0;
             printf("%s -> %d\n", current->word, current->freq);
             current = current->next;
         }
-    }
-
-    if (empty) {
-        printf("Empty file\n");
     }
 }
 
@@ -120,36 +116,31 @@ int count_words(char* file_name) {
     anyValidFiles = 1;
 
     char buffer[1024];
-int fd;
-ssize_t bytes_read;  // number of characters/bytes read 
-char store_word[100]; //store words in array
+    int fd;
+    ssize_t bytes_read;  // number of characters/bytes read 
+    char store_word[100]; //store words in array
 
-
-
-
-fd = open(file_name, O_RDONLY);
+    fd = open(file_name, O_RDONLY);
     if (fd == -1) {
         perror("Error opening file");
         return 1;
     }
 
-int wordIndex = 0;
+    int wordIndex = 0;
 
-  while ((bytes_read = read(fd, buffer, 1024)) > 0) {
+    while ((bytes_read = read(fd, buffer, 1024)) > 0) {
         for (int i = 0; i < bytes_read; i++) {
-            if (buffer[i] != ' ' && buffer[i] != '\n' && buffer[i] != '!' && buffer[i] != '?' && buffer[i] != ',' && buffer[i] != '"' && buffer[i] != '.')  {
-                //printf( "%c",  buffer[i]);
-                if ((buffer[i] == '-' && buffer[i+1] == '-')){
-                    i++;
-                    //dash = 2;
+            if (buffer[i] != ' ' && buffer[i] != '\t' && buffer[i] != '\n' && buffer[i] != '!' && buffer[i] != '?' && buffer[i] != ',' && buffer[i] != '"' && buffer[i] != '.')  {
+                //printf( "%c",  buffer[i]); // debug
+                if ((buffer[i] == '-')) {
+                    if(i != bytes_read - 1 && buffer[i+1] == '-') {
+                        i++;
+                    }
                     store_word[wordIndex] = '\0'; // Null-terminate the word
                     insertHash(store_word);
-                    printf("Wordssss: %s\n", store_word);
+                    //printf("Wordssss: %s\n", store_word); // debug
                     wordIndex = 0;
-
- 
-                    }
-                else if(isdigit(buffer[i])){
+                } else if(isdigit(buffer[i])) {
                         if(wordIndex==0){
                         store_word[wordIndex] = '\0'; 
     
@@ -259,8 +250,13 @@ int main(int argc, char* argv[]) {
 
 
     if(anyValidFiles) {
-        // sort and print output
-        print();
+        if (anyWordsRead) {
+            // sort and print output
+            print();
+        } else {
+            fprintf(stderr, "Error: empty file, no words to process\n");
+        }
+
         return 0;
     } else {
         fprintf(stderr, "Error: No valid arguments to process\n");

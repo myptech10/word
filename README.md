@@ -9,7 +9,10 @@ UNCLEAR:
     - what to do if all arguments are invalid?
 - used chdir to recursively open the current working directory so it would be easier to run wordcount as a separate function without dealing with filepaths, is this ok?
 
-
+tbi:
+- look for more separator characters
+- hyphen thing?
+- if one hyphen at beginning or end keep it
 
 
 part 1: need file IO that scans files in sequence & opens directories recursively
