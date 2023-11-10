@@ -165,7 +165,6 @@ int wordIndex = 0;
                 if (wordIndex > 0) {
                     store_word[wordIndex] = '\0'; // Null-terminate the word
                     insertHash(store_word);
-                    printf("Word: %s\n", store_word);
                     wordIndex = 0;
                 }
             }
@@ -179,10 +178,8 @@ int wordIndex = 0;
         store_word[wordIndex] = '\0';
        // printf("Word: %s\n", store_word);
 
-        insertOrUpdateWord(store_word);
+        insertHash(store_word);
     }
-
-         print();
  close(fd);
     return 0;
 
@@ -242,7 +239,7 @@ int main(int argc, char* argv[]) {
             if (isDirectory(argv[i]) && hasReadPerms(argv[i])) {
                 //printf("dir %s\n", argv[i]); // debug
                 recurseDirectory(argv[i]);
-            } else if (isTextFile(argv[i]) && hasReadPerms(argv[i])) {
+            } else if (hasReadPerms(argv[i])) {
                 printf("%s\n", argv[i]); // debug
                 count_words(argv[i]);
             }
