@@ -56,7 +56,14 @@ void insertHash(char* word) {
 }
 
 void print() {
-   for (int i = 0; i < HASH_TABLE_SIZE; i++) {
+    int anyNodesLeft = 1;
+    Node* current;
+
+    while(anyNodesLeft) {
+        
+    }
+
+    for (int i = 0; i < HASH_TABLE_SIZE; i++) {
         Node* current = hash_table[i];
         while (current != NULL) {
             printf("%s -> %d\n", current->word, current->freq);
@@ -108,6 +115,7 @@ int hasReadPerms(char* file_name) {
         return 1;
     }else{
         fprintf(stderr, "Error: Cannot read %s: %s\n", file_name, strerror(errno));
+        errno = 0;
         return 0;
     }
 }
@@ -130,6 +138,7 @@ int count_words(char* file_name) {
 
     while ((bytes_read = read(fd, buffer, 1024)) > 0) {
         for (int i = 0; i < bytes_read; i++) {
+            
             if (buffer[i] != ' ' && buffer[i] != ';' && buffer[i] != '\t' && buffer[i] != ':' && buffer[i] != '\n' && buffer[i] != '!' && buffer[i] != '?' && buffer[i] != ',' && buffer[i] != '"' && buffer[i] != '.')  {
                 //printf( "%c",  buffer[i]); // debug
                 if ((buffer[i] == '-')) {
@@ -244,6 +253,7 @@ int main(int argc, char* argv[]) {
     // char buf[200];
     // printf("%s\n", getcwd(buf, 200));
 
+    printf("\n");
 
 
     if(anyValidFiles) {

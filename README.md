@@ -8,11 +8,22 @@ UNCLEAR:
 - error handling: if we encounter an invalid file, do we stop the whole program or continue evaluating every other file?
     - what to do if all arguments are invalid?
 - used chdir to recursively open the current working directory so it would be easier to run wordcount as a separate function without dealing with filepaths, is this ok?
-
+- long hyphen ------------
+- apostrophe case '-' two or one
+- can i use fprintf for error handling?
+    - use write
 tbi:
 - look for more separator characters
-- hyphen thing?
-- if one hyphen at beginning or end keep it
+- hyphen thing
+    - NO HYPHEN AT BEGINNING OR END or both
+    - test - vs --, - at end of file vs -- at eof
+- describe tests readme
+- apostrophes '''''
+- single - or ?
+- hyphen in word is last char in buffer edge case
+- same name 
+- remove all symbols
+- CANNOT ASSUME MAX WORD LENGTH
 
 - mehek: make write() implementation
 - implement sorting of print
