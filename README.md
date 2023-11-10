@@ -14,6 +14,8 @@ tbi:
 - hyphen thing?
 - if one hyphen at beginning or end keep it
 
+- mehek: make write() implementation
+- implement sorting of print
 
 part 1: need file IO that scans files in sequence & opens directories recursively
 - need to learn abt file IO if you open a file in a method does it stay open?

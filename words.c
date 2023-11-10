@@ -50,7 +50,7 @@ void insertHash(char* word) {
     //create new if not fond 
     Node* newNode = (Node*)malloc(sizeof(Node));
     newNode->word = strdup(word);
-    newNode->freq ++;
+    newNode->freq = 1;
     newNode->next = hash_table[index];
     hash_table[index] = newNode;
 }
@@ -130,7 +130,7 @@ int count_words(char* file_name) {
 
     while ((bytes_read = read(fd, buffer, 1024)) > 0) {
         for (int i = 0; i < bytes_read; i++) {
-            if (buffer[i] != ' ' && buffer[i] != '\t' && buffer[i] != '\n' && buffer[i] != '!' && buffer[i] != '?' && buffer[i] != ',' && buffer[i] != '"' && buffer[i] != '.')  {
+            if (buffer[i] != ' ' && buffer[i] != ';' && buffer[i] != '\t' && buffer[i] != ':' && buffer[i] != '\n' && buffer[i] != '!' && buffer[i] != '?' && buffer[i] != ',' && buffer[i] != '"' && buffer[i] != '.')  {
                 //printf( "%c",  buffer[i]); // debug
                 if ((buffer[i] == '-')) {
                     if(i != bytes_read - 1 && buffer[i+1] == '-') {
@@ -141,15 +141,15 @@ int count_words(char* file_name) {
                     //printf("Wordssss: %s\n", store_word); // debug
                     wordIndex = 0;
                 } else if(isdigit(buffer[i])) {
-                        if(wordIndex==0){
+                    if(wordIndex==0) {
                         store_word[wordIndex] = '\0'; 
-    
-                        } else{
-                         insertHash(store_word);
-                         printf("Word: %s\n", store_word); }
-                         wordIndex = 0;
-                         continue;
-                }
+                    } else{
+                        insertHash(store_word);
+                        // printf("Word: %s\n", store_word); debug
+                    }
+                        wordIndex = 0;
+                        continue;
+                    }
 
                 else{
                 //store character in array
@@ -170,16 +170,13 @@ int count_words(char* file_name) {
     }
 
 
-     if (wordIndex > 0) {
-
+    if (wordIndex > 0) {
         store_word[wordIndex] = '\0';
-       // printf("Word: %s\n", store_word);
-
+        // printf("Word: %s\n", store_word);
         insertHash(store_word);
     }
- close(fd);
+    close(fd);
     return 0;
-
 }
 
 void recurseDirectory(char* file_name) {   
@@ -253,13 +250,12 @@ int main(int argc, char* argv[]) {
         if (anyWordsRead) {
             // sort and print output
             print();
+            return 0;
         } else {
             fprintf(stderr, "Error: empty file, no words to process\n");
         }
-
-        return 0;
     } else {
         fprintf(stderr, "Error: No valid arguments to process\n");
-        return -1;
     }
+    return -1;
 }
