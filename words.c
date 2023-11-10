@@ -54,12 +54,18 @@ void insertHash(char* word) {
 }
 
 void print() {
+     int empty = 1;
     for (int i = 0; i < HASH_TABLE_SIZE; i++) {
         Node* current = hash_table[i];
         while (current != NULL) {
+            empty = 0;
             printf("%s -> %d\n", current->word, current->freq);
             current = current->next;
         }
+    }
+
+    if (empty) {
+        printf("Empty file\n");
     }
 }
 
