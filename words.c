@@ -66,7 +66,10 @@ void print() {
     for (int i = 0; i < HASH_TABLE_SIZE; i++) {
         Node* current = hash_table[i];
         while (current != NULL) {
-            printf("%s -> %d\n", current->word, current->freq);
+            char buffer[1024];
+            int len = snprintf(buffer, sizeof(buffer), "%s -> %d\n", current->word, current->freq);
+            write(STDOUT_FILENO, buffer, len);
+            //printf("%s -> %d\n", current->word, current->freq);
             current = current->next;
         }
     }
@@ -259,7 +262,9 @@ int main(int argc, char* argv[]) {
     if(anyValidFiles) {
         if (anyWordsRead) {
             // sort and print output
-            print();
+             write(STDOUT_FILENO, buffer, len);
+
+           // print();
             return 0;
         } else {
             fprintf(stderr, "Error: empty file, no words to process\n");
