@@ -137,8 +137,8 @@ int count_words(char* file_name) {
     int fd;
     ssize_t bytes_read;  // number of characters/bytes read 
     //char store_word[100]; //store words in array
-    char* store_word = NULL; // initializes a pointer variable store_word to NULL
-
+    //char* store_word = NULL; // initializes a pointer variable store_word to NULL
+    char* store_word = (char*)malloc(1024 * sizeof(char));
 
     fd = open(file_name, O_RDONLY);
     if (fd == -1) {
