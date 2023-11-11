@@ -159,10 +159,11 @@ int count_words(char* file_name) {
                     
             if (!isSeparator) {
                 //printf( "%c",  buffer[i]); // debug
-                if ((buffer[i] == '-')) {
+                if (buffer[i] == '-') {
                     if(i != bytes_read - 1 && buffer[i+1] == '-') {
                         i++;
                     }
+                    
                     store_word[wordIndex] = '\0'; // Null-terminate the word
                     insertHash(store_word);
                     //printf("Wordssss: %s\n", store_word); // debug
@@ -180,7 +181,9 @@ int count_words(char* file_name) {
 
                 else{
                 //store character in array
+                 store_word = (char*)realloc(store_word, wordIndex + 2);  
                 store_word[wordIndex] = buffer[i];
+                store_word[wordIndex + 1] = '\0'; 
                 wordIndex++;     
                 } 
             } 
