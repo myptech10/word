@@ -78,16 +78,22 @@ int fileExists(char* file_name) {
     if (access(file_name, F_OK) == 0) {
         return 1;
     } else {
-        fprintf(stderr, "Error opening %s, %s\n", file_name, strerror(errno));
+        char error_message[256];
+        int len = snprintf(error_message, sizeof(error_message), "Error opening %s, %s\n", file_name, strerror(errno));
+        write(2, error_message, len);
         return 0;
     }
 }
 
+
+
 int isDirectory(char* file_name) {
     struct stat file_buffer;
 
-    if (stat(file_name, &file_buffer) != 0){
-        fprintf(stderr, "Error checking file type for %s: %s\n", file_name, strerror(errno));
+    if (stat(file_name, &file_buffer) != 0) {
+        char error_message[256];
+        int len = snprintf(error_message, sizeof(error_message), "Error checking file type for %s: %s\n", file_name, strerror(errno);
+        write(2, error_message, len); //2 - Standard Error (stderr)
         return 0;
     }
  
@@ -113,11 +119,13 @@ int isTextFile(char* file_name) {
 }
 
 int hasReadPerms(char* file_name) {
-    if(access(file_name, R_OK) == 0){
+    if (access(file_name, R_OK) == 0) {
         return 1;
-    }else{
-        fprintf(stderr, "Error: Cannot read %s: %s\n", file_name, strerror(errno));
-        errno = 0;
+    } else {
+        char error_message[256];
+        int len = snprintf(error_message, sizeof(error_message), "Error: Cannot read %s: %s\n", file_name, strerror(errno));
+        write(2, error_message, len);
+        errno = 0; // Reset the errno value
         return 0;
     }
 }
@@ -128,7 +136,9 @@ int count_words(char* file_name) {
     char buffer[1024];
     int fd;
     ssize_t bytes_read;  // number of characters/bytes read 
-    char store_word[100]; //store words in array
+    //char store_word[100]; //store words in array
+    char* store_word = NULL; // initializes a pointer variable store_word to NULL
+
 
     fd = open(file_name, O_RDONLY);
     if (fd == -1) {
@@ -272,10 +282,11 @@ int main(int argc, char* argv[]) {
             displaySortedWords();
             return 0;
         } else {
-            fprintf(stderr, "Error: empty file, no words to process\n");
-        }
+            const char* error_message = "Error: empty file, no words to process\n";
+            write(STDERR_FILENO, error_message, strlen(error_message));        }
     } else {
-        fprintf(stderr, "Error: No valid arguments to process\n");
+       const char* error_message = "Error: No valid arguments to process\n";
+       write(STDERR_FILENO, error_message, strlen(error_message));
     }
     return -1;
 }
