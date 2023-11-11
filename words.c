@@ -240,7 +240,7 @@ void recurseDirectory(char* file_name) {
             if (errno != 0) {
                 char error_message[256];
                 int len = snprintf(error_message, sizeof(error_message), "Error traversing directory %s: %s\n", file_name, strerror(errno));
-                write(STDERR_FILENO, error_message, len);
+                write(STDERR_FILENO, error_message, len); 
                 errno = 0;
             }
             break;
@@ -250,26 +250,32 @@ void recurseDirectory(char* file_name) {
     if (closedir(current_dir) != 0) {
         char error_message[256];
         int len = snprintf(error_message, sizeof(error_message), "Error: Cannot close directory %s: %s\n", file_name, strerror(errno));
-        write(STDERR_FILENO, error_message, len);
     }
 
     if (chdir("..") != 0) {
         char error_message[256];
         int len = snprintf(error_message, sizeof(error_message), "Error: Cannot move out of directory %s: %s\n", file_name, strerror(errno));
         write(STDERR_FILENO, error_message, len);
+
     }
 }
 
-
 int main(int argc, char* argv[]) {
-    for(int i = 1; i < argc; i++){
-        //printf("Argument %d: %s\n", i, argv[i]); //debug
+    for (int i = 1; i < argc; i++) {
+        char buffer[1024];
+        int len = snprintf(buffer, sizeof(buffer), "Argument %d: %s\n", i, argv[i]);
+        write(STDOUT_FILENO, buffer, len); 
+
         if (fileExists(argv[i])) {
             if (isDirectory(argv[i]) && hasReadPerms(argv[i])) {
-                //printf("dir %s\n", argv[i]); // debug
+                char dir_message[1024];
+                int dir_len = snprintf(dir_message, sizeof(dir_message), "dir %s\n", argv[i]);
+                write(STDOUT_FILENO, dir_message, dir_len); 
                 recurseDirectory(argv[i]);
             } else if (hasReadPerms(argv[i])) {
-                printf("%s\n", argv[i]); // debug
+                char file_message[1024];
+                int file_len = snprintf(file_message, sizeof(file_message), "%s\n", argv[i]);
+                write(STDOUT_FILENO, file_message, file_len); 
                 count_words(argv[i]);
             }
         }
@@ -279,9 +285,9 @@ int main(int argc, char* argv[]) {
     // char buf[200];
     // printf("%s\n", getcwd(buf, 200));
 
+    printf("\n");
 
-
-    if(anyValidFiles) {
+    if (anyValidFiles) {
         if (anyWordsRead) {
             // sort and print output
             printf("\n");
@@ -289,10 +295,12 @@ int main(int argc, char* argv[]) {
             return 0;
         } else {
             const char* error_message = "Error: empty file, no words to process\n";
-            write(STDERR_FILENO, error_message, strlen(error_message));        }
+            write(STDERR_FILENO, error_message, strlen(error_message));
+        }
     } else {
        const char* error_message = "Error: No valid arguments to process\n";
        write(STDERR_FILENO, error_message, strlen(error_message));
     }
     return -1;
 }
+
