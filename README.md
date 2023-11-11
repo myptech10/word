@@ -1,23 +1,24 @@
 # Wordcount
 
 ## Collaborators:
-Dhvani Patel
-Mehek Palrecha
+Dhvani Patel (dgp69)
+Mehek Palrecha (myp32)
 
 ## Design
 
 ### How-To
 
 make words
+
 ./words [...]
 
 ### Project Structure
 
-Part I: file IO that scans files in sequence & opens directories recursively
+Part I: file IO that scans files in sequence & opens directories recursively, see recursiveDirectory()
 
-Part II: method that processes each file by counts words using the rules of our language as defined in class
+Part II: method that processes each file by counts words using the rules of our language as defined in class, see count_words()
 
-Part III: Data Structure
+Part III: Hash map data structure that holds nodes of each word containing frequency of word, see hash() and insertHash()
 
 ### Some Design Decisions
 
@@ -28,6 +29,7 @@ Part III: Data Structure
     - for the purposes of this project, since we could not find clear guidelines on whether or not special characters such as @#$%^&*()<>[]{}|/\ were part of words, we decided they were separators and would end not be part of words
         - we considered anything in our array separators[] to be a delimiter
     - _ is not a delimiter
+    - considered hyphens between letters to be one word (a-a) but hyphens between apostrophes to be two ('-')
 
 
 #### Error Handling
@@ -41,59 +43,26 @@ Program prints errors for the following cases:
 
 - Occasionally while traversing directories the program will encounter some files which will be marked as invalid:
     - files that the program does not have permission to read
-    - 
-
-All other files passed as arguments to the program will be treated as text files regardless of extension
+    - files not ending in .txt
+- All files passed as arguments to the program will be treated as text files regardless of extension
 
 
 ## Testing
 
-- recursive on nine,eight,seven.. files used to for testing 
-
-
 ### Performance
 
-- we did a /.words to see if the words are robust 
+- ./words all_test_cases/nine to see if directory traversal could handle many recursive calls
+-  ./words . to see if the program could handle a large amount of files of varying types and words of varying lengths at once. This was basically an everything test
 
 ### Correctness
 
-- Super23Foo -> Super and Foo seperate words  
-- oo-bar -> Foo-bar gets printed as foo-bar 
-- foo--bar -> foo and bar seperate words 
+- loremipsum.txt tests sample text for counting words
+- several files test language rules around hyphens and apostrophes
+- also copied example files from project writeup, spam.txt, example.txt
 
 ### Edge Cases
 
 - same_name_file - > tests files in different directories
-- nine, eight, seven... -> tests files within each each other (subfiles) recursively
 - emptyfile -> tests files with no words
-- file does not exist/cannot open -> error in words.c write() method when fd = -1
+- unreadablefile.txt -> error in words.c write() method when fd = -1
 - same_name_file.txt and all_test_cases/same_name_file.txt
-
-//same_name_file - > tests files in different directories
-// nine, eight, seven... -> tests files within each each other (subfiles) recursively
-//emptyfile -> tests files with no words
-//file does not exist/cannot open -> error in words.c write() method when fd = -1
-
-- same_name_file.txt and all_test_cases/same_name_file.txt
-
-delete before turning in:
-
-- hyphen thing
-    - long hyphen ------------
-    - apostrophe case '-' two or one
-    - NO HYPHEN AT BEGINNING OR END or both
-    - test - vs --, - at end of file vs -- at eof
-- apostrophes '''''
-- single - or ?
-- hyphen in word is last char in buffer edge case
-
-
-- same name
-- CANNOT ASSUME MAX WORD LENGTH
-- describe tests readme
-
-- word longer than buffer
-
-- implement sorting of print
-    - by freq
-    - by lexicography

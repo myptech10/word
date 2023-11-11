@@ -55,54 +55,69 @@ void insertHash(char* word) {
 }
 
 void displaySortedWords() {
-    int anyNodesLeft = 0;
+    int anyNodesLeft = 1;
     Node* current;
     Node* max = hash_table[0];
     
     int i = 1;
-    while(max == NULL) {
+    while(max == NULL && i < 100) {
         max = hash_table[i];
         i++;
     }
-    printf(i);
-    
-    for (int i = 0; i < HASH_TABLE_SIZE; i++) {
-        Node* current = hash_table[i];
-        while (current != NULL) {
-            //if(current->)
-            current = current->next;
+
+    while(1) {
+        anyNodesLeft = 0;
+
+        for(int i = 0; i < HASH_TABLE_SIZE; i++) {
+            current = hash_table[i];
+            while(current != NULL) {
+                if(current->freq != -1) {
+                    anyNodesLeft = 1;
+                    if(current->freq > max->freq) {
+                        max = current;
+                    } else if (current->freq == max -> freq && strcmp(current->word, max->word) < 0) {
+                        max = current;
+                    }
+                }
+                current = current->next;
+            }
         }
-        char buffer[1024];
-        int len = snprintf(buffer, sizeof(buffer), "%s -> %d\n", current->word, current->freq);
-        write(STDOUT_FILENO, buffer, len);
+        //print node
+        if (anyNodesLeft) {
+            char* str = malloc(strlen(max->word)+20);
+            sprintf(str, "%s -> %d\n", max->word, max->freq);
+            write(STDOUT_FILENO, str, strlen(str));
+            free(str);
 
+            // discard node
+            max->freq = -1;
+        } else {
+            break;
+        }
     }
-
-    // //printf("%s -> %d\n", current->word, current->freq);
-    // current = current->next;
-
 }
 
 int fileExists(char* file_name) {
     if (access(file_name, F_OK) == 0) {
         return 1;
     } else {
-        char error_message[256];
-        int len = snprintf(error_message, sizeof(error_message), "Error opening %s, %s\n", file_name, strerror(errno));
-        write(2, error_message, len);
+        char* str = malloc(strlen(file_name) + strlen(strerror(errno))+50);
+        sprintf(str, "Error opening %s: %s\n", file_name, strerror(errno));
+        write(STDERR_FILENO, str, strlen(str));
+        free(str);
+        errno = 0;
         return 0;
     }
 }
-
-
 
 int isDirectory(char* file_name) {
     struct stat file_buffer;
 
     if (stat(file_name, &file_buffer) != 0) {
-        char error_message[256];
-        int len = snprintf(error_message, sizeof(error_message), "Error checking file type for %s: %s\n", file_name, strerror(errno));
-        write(2, error_message, len); //2 - Standard Error (stderr)
+        char* str = malloc(strlen(file_name) + strlen(strerror(errno))+50);
+        sprintf(str, "Error checking file type for %s: %s\n", file_name, strerror(errno));
+        write(STDERR_FILENO, str, strlen(str));
+        free(str);
         return 0;
     }
  
@@ -130,17 +145,14 @@ int hasReadPerms(char* file_name) {
     if (access(file_name, R_OK) == 0) {
         return 1;
     } else {
-        char error_message[256];
-        int len = snprintf(error_message, sizeof(error_message), "Error: Cannot read %s: %s\n", file_name, strerror(errno));
-        write(2, error_message, len);
-        errno = 0; // Reset the errno value
+        char* str = malloc(strlen(file_name) + strlen(strerror(errno))+30);
+        sprintf(str, "Error: Cannot read %s: %s\n", file_name, strerror(errno));
+        write(STDERR_FILENO, str, strlen(str));
+        free(str);
+        errno = 0;
         return 0;
     }
 }
-
-// int terminate_word(char* store_word, int* ptr_word_index) {
-
-// }
 
 char* save_word(char* word_buffer, int* p_word_index, int* p_size_word_buffer) {
     word_buffer[*p_word_index] = '\0';
@@ -165,7 +177,11 @@ void count_words(char* file_name) {
 
     fd = open(file_name, O_RDONLY);
     if (fd == -1) {
-        perror("Error opening file");
+        char* str = malloc(strlen(file_name) + strlen(strerror(errno)) + 30);
+        sprintf(str, "Error: Cannot open file %s: %s\n", file_name, strerror(errno));
+        write(STDERR_FILENO, str, strlen(str));
+        free(str);
+        errno = 0;
     }
 
     while (1) {
@@ -239,7 +255,11 @@ void count_words(char* file_name) {
             }
             break;
         } else if (status < 0) {
-            perror("read failed"); // change to write
+            char* str = malloc(strlen(file_name) + strlen(strerror(errno))+30);
+            sprintf(str, "Error: Cannot read %s: %s\n", file_name, strerror(errno));
+            write(STDERR_FILENO, str, strlen(str));
+            free(str);
+            errno = 0;
         }
     }
 
@@ -249,17 +269,19 @@ void count_words(char* file_name) {
 
 void recurseDirectory(char* file_name) {
     if (chdir(file_name) != 0) {
-        char error_message[256];
-        int len = snprintf(error_message, sizeof(error_message), "Error: Cannot move into directory %s: %s\n", file_name, strerror(errno));
-        write(STDERR_FILENO, error_message, len);
+        char* str = malloc(strlen(file_name) + strlen(strerror(errno))+50);
+        sprintf(str, "Error: Cannot change to directory %s: %s\n", file_name, strerror(errno));
+        write(STDERR_FILENO, str, strlen(str));
+        free(str);
         return;
     }
 
     DIR* current_dir = opendir(".");
     if (current_dir == NULL) {
-        char error_message[256];
-        int len = snprintf(error_message, sizeof(error_message), "Error: Cannot read from directory %s: %s\n", file_name, strerror(errno));
-        write(STDERR_FILENO, error_message, len);
+        char* str = malloc(strlen(file_name) + strlen(strerror(errno))+50);
+        sprintf(str, "Error: Cannot open directory %s: %s\n", file_name, strerror(errno));
+        write(STDERR_FILENO, str, strlen(str));
+        free(str);
         return;
     }
 
@@ -277,17 +299,19 @@ void recurseDirectory(char* file_name) {
                     // write(STDOUT_FILENO, buffer, len); // Replace printf with write
                     recurseDirectory(current_file->d_name);
                 } else if (isTextFile(current_file->d_name) && hasReadPerms(current_file->d_name)) {
-                    char buffer[sizeof(current_file->d_name)];
-                    int len = snprintf(buffer, sizeof(buffer), "%s\n", current_file->d_name);
-                    write(STDOUT_FILENO, buffer, len); // Replace printf with write
+                    char* str = malloc(sizeof(current_file->d_name) + 5);
+                    sprintf(str, "%s\n", current_file->d_name);
+                    write(STDOUT_FILENO, str, strlen(str));
+                    free(str);
                     count_words(current_file->d_name);
                 }
             }
         } else {
             if (errno != 0) {
-                char error_message[256];
-                int len = snprintf(error_message, sizeof(error_message), "Error traversing directory %s: %s\n", file_name, strerror(errno));
-                write(STDERR_FILENO, error_message, len); 
+                char* str = malloc(strlen(file_name) + strlen(strerror(errno))+50);
+                sprintf(str, "Error traversing directory %s: %s\n", file_name, strerror(errno));
+                write(STDERR_FILENO, str, strlen(str));
+                free(str);
                 errno = 0;
             }
             break;
@@ -295,15 +319,17 @@ void recurseDirectory(char* file_name) {
     } while(1);
 
     if (closedir(current_dir) != 0) {
-        char error_message[256];
-        int len = snprintf(error_message, sizeof(error_message), "Error: Cannot close directory %s: %s\n", file_name, strerror(errno));
-        write(STDERR_FILENO, error_message, len);
+        char* str = malloc(strlen(file_name) + strlen(strerror(errno))+50);
+        sprintf(str, "Error: Cannot close directory %s: %s\n", file_name, strerror(errno));
+        write(STDERR_FILENO, str, strlen(str));
+        free(str);
     }
 
     if (chdir("..") != 0) {
-        char error_message[256];
-        int len = snprintf(error_message, sizeof(error_message), "Error: Cannot move out of directory %s: %s\n", file_name, strerror(errno));
-        write(STDERR_FILENO, error_message, len);
+        char* str = malloc(strlen(file_name) + strlen(strerror(errno))+50);
+        sprintf(str, "Error: Cannot move out of directory %s: %s\n", file_name, strerror(errno));
+        write(STDERR_FILENO, str, strlen(str));
+        free(str);
     }
 }
 
@@ -322,10 +348,11 @@ int main(int argc, char* argv[]) {
                 // write(STDOUT_FILENO, dir_message, dir_len); 
                 recurseDirectory(argv[i]);
             } else if (hasReadPerms(argv[i])) {
-                char file_message[sizeof(argv[i])];
-                int file_len = snprintf(file_message, sizeof(file_message), "%s\n", argv[i]);
-                write(STDOUT_FILENO, file_message, file_len); 
+                char* str = malloc(strlen(argv[i]) + 5);
+                sprintf(str, "Error: empty file, no words to process\n");
+                write(STDERR_FILENO, str, strlen(str)); 
                 count_words(argv[i]);
+                free(str);
             }
         }
     }
@@ -339,15 +366,21 @@ int main(int argc, char* argv[]) {
     if (anyValidFiles) {
         if (anyWordsRead) {
             // sort and print output
+            char* str = "\n\n";
+            write(STDOUT_FILENO, str, strlen(str));
             displaySortedWords();
             return 0;
         } else {
-            const char* error_message = "Error: empty file, no words to process\n";
-            write(STDERR_FILENO, error_message, strlen(error_message));
+            char* str = malloc(50);
+            sprintf(str, "Error: empty file, no words to process\n");
+            write(STDERR_FILENO, str, strlen(str));
+            free(str);
         }
     } else {
-       const char* error_message = "Error: No valid arguments to process\n";
-       write(STDERR_FILENO, error_message, strlen(error_message));
+        char* str = malloc(50);
+        sprintf(str, "Error: No valid arguments to process\n");
+        write(STDERR_FILENO, str, strlen(str));
+        free(str);
     }
     return -1;
 }
