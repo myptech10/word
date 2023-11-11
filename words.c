@@ -129,13 +129,20 @@ int hasReadPerms(char* file_name) {
     }
 }
 
-int count_words(char* file_name) {
+// int terminate_word(char* store_word, int* ptr_word_index) {
+
+// }
+
+void count_words(char* file_name) {
     anyValidFiles = 1;
 
-    char buffer[1024];
     int fd;
-    ssize_t bytes_read;  // number of characters/bytes read 
-    char* store_word = (char*)malloc(1024 * sizeof(char));
+    
+    char buffer;
+    // int size_word_buffer = 1;
+    // int wordIndex = 0;
+    // ssize_t bytes_read;  // number of characters/bytes read 
+    // char* store_word = NULL;
 
     fd = open(file_name, O_RDONLY);
     if (fd == -1) {
@@ -143,69 +150,84 @@ int count_words(char* file_name) {
         return 1;
     }
 
-    int wordIndex = 0;
-
-    while ((bytes_read = read(fd, buffer, 1024)) > 0) {
-        for (int i = 0; i < bytes_read; i++) {
-            char separators[] = {' ', '.', '\n', '\t', ';', '!', ':', '?', ',', '"', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '(', ')', '@', '#', '$', '%', '^', '&', '*', '<', '>', '[', ']', '|', '/', '\\', '{', '}'};
-            int isSeparator = 0;
-
-            for(int j = 0; j < sizeof(separators)/sizeof(char); j++) {
-                if(buffer[i] == separators[j]) {
-                    isSeparator = 1;
-                }
-            }
-                    
-            if (!isSeparator) {
-                //printf( "%c",  buffer[i]); // debug
-                if (buffer[i] == '-') {
-                    if(i != bytes_read - 1 && buffer[i+1] == '-') {
-                        i++;
-                    }
-                    
-                    store_word[wordIndex] = '\0'; // Null-terminate the word
-                    insertHash(store_word);
-                    //printf("Wordssss: %s\n", store_word); // debug
-                    wordIndex = 0;
-                } else if(isdigit(buffer[i])) {
-                    if(wordIndex==0) {
-                        store_word[wordIndex] = '\0'; 
-                    } else{
-                        insertHash(store_word);
-                        // printf("Word: %s\n", store_word); debug
-                    }
-                        wordIndex = 0;
-                        continue;
-                    }
-
-                else{
-                //store character in array
-                store_word = (char*)realloc(store_word, wordIndex + 2);
-                store_word[wordIndex] = buffer[i];
-                store_word[wordIndex + 1] = '\0'; 
-                wordIndex++;     
-                } 
-            } 
-            
-            else { //a weird character 
-                if (wordIndex > 0) {
-                    store_word[wordIndex] = '\0'; // Null-terminate the word
-                    insertHash(store_word);
-                    wordIndex = 0;
-                }
-            }
+    while (1) {
+        int status = read(fd, &buffer, 1);
+        if (status > 0) {
+            printf("%c\n", buffer);
+        } else if (status == 0) {
+            break;
+        } else if (status < 0) {
+            break;
         }
- 
     }
 
-
-    if (wordIndex > 0) {
-        store_word[wordIndex] = '\0';
-        // printf("Word: %s\n", store_word);
-        insertHash(store_word);
-    }
     close(fd);
-    return 0;
+
+    // while ((bytes_read = read(fd, buffer, 1024)) > 0) {
+        
+    //     store_word = malloc(size_word_buffer);
+
+    //     for (int i = 0; i < bytes_read; i++) {
+            
+    //         char separators[] = {' ', '.', '\n', '\t', ';', '!', ':', '?', ',', '"', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '(', ')', '@', '#', '$', '%', '^', '&', '*', '<', '>', '[', ']', '|', '/', '\\', '{', '}'};
+    //         int isSeparator = 0;
+    //         for(int j = 0; j < sizeof(separators)/sizeof(char); j++) {
+    //             if(buffer[i] == separators[j]) {
+    //                 isSeparator = 1;
+    //             }
+    //         }
+                    
+    //         if (!isSeparator) {
+    //             //printf( "%c",  buffer[i]); // debug
+    //             if (buffer[i] == '-') {
+    //                 if(i != bytes_read - 1 && buffer[i+1] == '-') {
+    //                     i++;
+    //                 }
+                    
+    //                 store_word[wordIndex] = '\0'; // Null-terminate the word
+    //                 insertHash(store_word);
+    //                 free(store_word);
+    //                 size_word_buffer = 1;
+    //                 store_word = malloc(size_word_buffer);
+
+    //                 //printf("Wordssss: %s\n", store_word); // debug
+    //                 wordIndex = 0;
+    //             } else {
+    //                 //store character in array
+    //                 if(wordIndex >= size_word_buffer - 10) {
+    //                     size_word_buffer *= 2;
+    //                     store_word = (char*)realloc(store_word, size_word_buffer);
+    //                 }
+    //                 store_word[wordIndex] = buffer[i];
+    //                 store_word[wordIndex + 1] = '\0';
+    //                 free(store_word);
+    //                 size_word_buffer = 1;
+    //                 store_word = malloc(size_word_buffer);                     
+    //                 wordIndex++;     
+    //             } 
+    //         } else { //a weird character 
+    //             if (wordIndex > 0) {
+    //                 store_word[wordIndex] = '\0'; // Null-terminate the word
+    //                 insertHash(store_word);
+    //                 free(store_word);
+    //                 size_word_buffer = 1;
+    //                 store_word = malloc(size_word_buffer);
+    //                 wordIndex = 0;
+    //             }
+    //         }
+
+
+    //     }
+
+        
+    // }
+
+
+    // if (wordIndex > 0) {
+    //     store_word[wordIndex] = '\0';
+    //     // printf("Word: %s\n", store_word);
+    //     insertHash(store_word);
+    // }
 }
 
 void recurseDirectory(char* file_name) {   
@@ -273,12 +295,12 @@ int main(int argc, char* argv[]) {
     // char buf[200];
     // printf("%s\n", getcwd(buf, 200));
 
-    printf("\n");
 
 
     if(anyValidFiles) {
         if (anyWordsRead) {
             // sort and print output
+            printf("\n");
             displaySortedWords();
             return 0;
         } else {
