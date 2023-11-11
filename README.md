@@ -52,14 +52,7 @@ All other files passed as arguments to the program will be treated as text files
 
 ### Performance
 
-//
-
 ### Correctness
-
-//Super23Foo -> prints Super and foo seperated
-//Foo-bar  -> prints Foo-bar
-//baz--quux -> prints baz and quuz seperated
-
 
 ### Edge Cases
 
@@ -68,24 +61,23 @@ All other files passed as arguments to the program will be treated as text files
 //emptyfile -> tests files with no words
 //file does not exist/cannot open -> error in words.c write() method when fd = -1
 
-
+- same_name_file.txt and all_test_cases/same_name_file.txt
 
 delete before turning in:
 
-- long hyphen ------------
-- apostrophe case '-' two or one
-tbi:
-- look for more separator characters
 - hyphen thing
+    - long hyphen ------------
+    - apostrophe case '-' two or one
     - NO HYPHEN AT BEGINNING OR END or both
     - test - vs --, - at end of file vs -- at eof
-- describe tests readme
 - apostrophes '''''
 - single - or ?
 - hyphen in word is last char in buffer edge case
+
+
 - same name
-- remove all symbols
 - CANNOT ASSUME MAX WORD LENGTH
+- describe tests readme
 
 - word longer than buffer
 
