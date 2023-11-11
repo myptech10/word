@@ -32,7 +32,6 @@ unsigned int hash(char* word) {
     return hash % HASH_TABLE_SIZE;
 }
 
-
 void insertHash(char* word) {
     anyWordsRead = 1;
 
@@ -55,13 +54,13 @@ void insertHash(char* word) {
     hash_table[index] = newNode;
 }
 
-void print() {
+void displaySortedWords() {
     int anyNodesLeft = 1;
     Node* current;
 
-    while(anyNodesLeft) {
+    // while(anyNodesLeft) {
         
-    }
+    // }
 
     for (int i = 0; i < HASH_TABLE_SIZE; i++) {
         Node* current = hash_table[i];
@@ -141,8 +140,16 @@ int count_words(char* file_name) {
 
     while ((bytes_read = read(fd, buffer, 1024)) > 0) {
         for (int i = 0; i < bytes_read; i++) {
-            
-            if (buffer[i] != ' ' && buffer[i] != ';' && buffer[i] != '\t' && buffer[i] != ':' && buffer[i] != '\n' && buffer[i] != '!' && buffer[i] != '?' && buffer[i] != ',' && buffer[i] != '"' && buffer[i] != '.')  {
+            char separators[] = {' ', '.', '\n', '\t', ';', '!', ':', '?', ',', '"', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '(', ')', '@', '#', '$', '%', '^', '&', '*', '<', '>', '[', ']', '|', '/', '\\', '{', '}'};
+            int isSeparator = 0;
+
+            for(int j = 0; j < sizeof(separators)/sizeof(char); j++) {
+                if(buffer[i] == separators[j]) {
+                    isSeparator = 1;
+                }
+            }
+                    
+            if (!isSeparator) {
                 //printf( "%c",  buffer[i]); // debug
                 if ((buffer[i] == '-')) {
                     if(i != bytes_read - 1 && buffer[i+1] == '-') {
@@ -262,9 +269,7 @@ int main(int argc, char* argv[]) {
     if(anyValidFiles) {
         if (anyWordsRead) {
             // sort and print output
-             write(STDOUT_FILENO, buffer, len);
-
-           // print();
+            displaySortedWords();
             return 0;
         } else {
             fprintf(stderr, "Error: empty file, no words to process\n");

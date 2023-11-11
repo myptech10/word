@@ -1,17 +1,65 @@
-# word
+# Wordcount
+
+## Collaborators:
+Dhvani Patel
+Mehek Palrecha
+
+## Design
+
+### How-To
+
+make words
+./words [...]
+
+### Project Structure
+
+Part I: file IO that scans files in sequence & opens directories recursively
+
+Part II: method that processes each file by counts words using the rules of our language as defined in class
+
+Part III: Data Structure
+
+### Some Design Decisions
+
+- program will print the name of every argument that it counts words in
+- while searching directories it ignore all files other than .txt files
+    - if it cannot read a file that is a directory or .txt file it prints an error message, but continues to count words excluding that file
+- language rules
+    - for the purposes of this project, since we could not find clear guidelines on whether or not special characters such as @#$%^&*()<>[]{}|/\ were part of words, we decided they were separators and would end not be part of words
+        - we considered anything in our array separators[] to be a delimiter
+    - _ is not a delimiter
+
+
+#### Error Handling
+
+Program prints errors for the following cases:
+- No arguments supplied
+- Arguments supplied but no valid files present (e.g. empty folder)
+- Arguments supplied, valid files supplied, but no words to count (e.g. empty text file)
+
+##### Invalid Arguments
+
+- Occasionally while traversing directories the program will encounter some files which will be marked as invalid:
+    - files that the program does not have permission to read
+    - 
+
+All other files passed as arguments to the program will be treated as text files regardless of extension
+
+
+## Testing
+
+### Performance
+
+### Correctness
+
+### Edge Cases
+
+
 
 delete before turning in:
 
-UNCLEAR:
-- should we be able to process other files containing character data that don't end in txt or only txt files?
-    - what abt a file whose name IS ".txt"?
-- error handling: if we encounter an invalid file, do we stop the whole program or continue evaluating every other file?
-    - what to do if all arguments are invalid?
-- used chdir to recursively open the current working directory so it would be easier to run wordcount as a separate function without dealing with filepaths, is this ok?
 - long hyphen ------------
 - apostrophe case '-' two or one
-- can i use fprintf for error handling?
-    - use write
 tbi:
 - look for more separator characters
 - hyphen thing
@@ -21,22 +69,12 @@ tbi:
 - apostrophes '''''
 - single - or ?
 - hyphen in word is last char in buffer edge case
-- same name 
+- same name
 - remove all symbols
 - CANNOT ASSUME MAX WORD LENGTH
 
-- mehek: make write() implementation
+- word longer than buffer
+
 - implement sorting of print
-
-part 1: need file IO that scans files in sequence & opens directories recursively
-- need to learn abt file IO if you open a file in a method does it stay open?
-part 2: call a method that processes the file and counts words for each file
-
-main things to consider:
-- how are we going to actually count the words? I think a list or tree of separator chars would be helpful
-- how to do file IO? how to recursively sort through directories?
-    - buffer edge case: what if a word is smaller than the buffer?
-- what data structure are we going to use to store words and frequencies? and how will we sort when returning words? sort in place?
-hash: based on word
-table is sorted lexicographically
-sort at the end, find max freq and num of words with that freq then remove lexicographically
+    - by freq
+    - by lexicography

@@ -1,1 +1,10 @@
-this is my file with a hyphen at the end-
+aaaa-
+-bbbb
+-cccc-
+d-e-f
+-g-h-i-
+j--
+--k
+--l--
+m--n--o
+--p--q--r--
