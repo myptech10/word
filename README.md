@@ -48,30 +48,32 @@ All other files passed as arguments to the program will be treated as text files
 
 ## Testing
 
-### Performance
+### Performance/Endurance Tests
 
-### Correctness
+
+
+### Correctness/Unit Tests
+
 
 ### Edge Cases
 
-
+- same_name_file.txt and all_test_cases/same_name_file.txt
 
 delete before turning in:
 
-- long hyphen ------------
-- apostrophe case '-' two or one
-tbi:
-- look for more separator characters
 - hyphen thing
+    - long hyphen ------------
+    - apostrophe case '-' two or one
     - NO HYPHEN AT BEGINNING OR END or both
     - test - vs --, - at end of file vs -- at eof
-- describe tests readme
 - apostrophes '''''
 - single - or ?
 - hyphen in word is last char in buffer edge case
+
+
 - same name
-- remove all symbols
 - CANNOT ASSUME MAX WORD LENGTH
+- describe tests readme
 
 - word longer than buffer
 

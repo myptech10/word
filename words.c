@@ -92,7 +92,7 @@ int isDirectory(char* file_name) {
 
     if (stat(file_name, &file_buffer) != 0) {
         char error_message[256];
-        int len = snprintf(error_message, sizeof(error_message), "Error checking file type for %s: %s\n", file_name, strerror(errno);
+        int len = snprintf(error_message, sizeof(error_message), "Error checking file type for %s: %s\n", file_name, strerror(errno));
         write(2, error_message, len); //2 - Standard Error (stderr)
         return 0;
     }
@@ -114,7 +114,6 @@ int isTextFile(char* file_name) {
         }
     }
 
-    //fprintf(stderr, "Error opening %s, not a .txt file\n", file_name);
     return 0;
 }
 
@@ -136,7 +135,6 @@ int count_words(char* file_name) {
     char buffer[1024];
     int fd;
     ssize_t bytes_read;  // number of characters/bytes read 
-    //char store_word[100]; //store words in array
     char* store_word = NULL; // initializes a pointer variable store_word to NULL
 
 
