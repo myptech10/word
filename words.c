@@ -190,11 +190,13 @@ int count_words(char* file_name) {
                 } 
             } 
             
-            else { //a weird character 
+            else { //a weird character  
                 if (wordIndex > 0) {
                     store_word[wordIndex] = '\0'; // Null-terminate the word
                     insertHash(store_word);
                     wordIndex = 0;
+
+                    
                 }
             }
         }
@@ -210,19 +212,22 @@ int count_words(char* file_name) {
     close(fd);
     return 0;
 }
-
-void recurseDirectory(char* file_name) {   
+void recurseDirectory(char* file_name) {
     if (chdir(file_name) != 0) {
-        fprintf(stderr, "Error: Cannot move into directory %s: %s\n", file_name, strerror(errno));
+        char error_message[256];
+        int len = snprintf(error_message, sizeof(error_message), "Error: Cannot move into directory %s: %s\n", file_name, strerror(errno));
+        write(STDERR_FILENO, error_message, len);
         return;
     }
 
     DIR* current_dir = opendir(".");
     if (current_dir == NULL) {
-        fprintf(stderr, "Error: Cannot read from directory %s: %s\n", file_name, strerror(errno));
+        char error_message[256];
+        int len = snprintf(error_message, sizeof(error_message), "Error: Cannot read from directory %s: %s\n", file_name, strerror(errno));
+        write(STDERR_FILENO, error_message, len);
         return;
     }
-    
+
     struct dirent* current_file;
     do {
         current_file = readdir(current_dir);
@@ -231,32 +236,41 @@ void recurseDirectory(char* file_name) {
                 continue;
             } else {
                 if (isDirectory(current_file->d_name) && hasReadPerms(current_file->d_name)) {
-                    //printf("dir %s\n", current_file->d_name); // debug
+                    char buffer[1024];
+                    int len = snprintf(buffer, sizeof(buffer), "dir %s\n", current_file->d_name);
+                    write(STDOUT_FILENO, buffer, len); // Replace printf with write
                     recurseDirectory(current_file->d_name);
                 } else if (isTextFile(current_file->d_name) && hasReadPerms(current_file->d_name)) {
-                    printf("%s\n", current_file->d_name); // debug
+                    char buffer[1024];
+                    int len = snprintf(buffer, sizeof(buffer), "%s\n", current_file->d_name);
+                    write(STDOUT_FILENO, buffer, len); // Replace printf with write
                     count_words(current_file->d_name);
                 }
             }
         } else {
             if (errno != 0) {
-                fprintf(stderr, "Error traversing directory %s: %s\n", file_name, strerror(errno));
+                char error_message[256];
+                int len = snprintf(error_message, sizeof(error_message), "Error traversing directory %s: %s\n", file_name, strerror(errno));
+                write(STDERR_FILENO, error_message, len);
                 errno = 0;
             }
             break;
         }
     } while(1);
 
-
-    if(closedir(current_dir) != 0){
-        fprintf(stderr, "Error: Cannot close directory %s: %s\n", file_name, strerror(errno));
-    }
-    if(chdir("..") != 0) {
-        fprintf(stderr, "Error: Cannot move out of directory %s: %s\n", file_name, strerror(errno));
+    if (closedir(current_dir) != 0) {
+        char error_message[256];
+        int len = snprintf(error_message, sizeof(error_message), "Error: Cannot close directory %s: %s\n", file_name, strerror(errno));
+        write(STDERR_FILENO, error_message, len);
     }
 
-    return;
+    if (chdir("..") != 0) {
+        char error_message[256];
+        int len = snprintf(error_message, sizeof(error_message), "Error: Cannot move out of directory %s: %s\n", file_name, strerror(errno));
+        write(STDERR_FILENO, error_message, len);
+    }
 }
+
 
 int main(int argc, char* argv[]) {
     for(int i = 1; i < argc; i++){
@@ -277,7 +291,6 @@ int main(int argc, char* argv[]) {
     // printf("%s\n", getcwd(buf, 200));
 
     printf("\n");
-
 
     if(anyValidFiles) {
         if (anyWordsRead) {
