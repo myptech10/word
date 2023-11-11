@@ -48,13 +48,26 @@ All other files passed as arguments to the program will be treated as text files
 
 ## Testing
 
+- recursive on nine,eight,seven.. files used to for testing 
 
 
 ### Performance
 
+- we did a /.words to see if the words are robust 
+
 ### Correctness
 
+- Super23Foo -> Super and Foo seperate words  
+- oo-bar -> Foo-bar gets printed as foo-bar 
+- foo--bar -> foo and bar seperate words 
+
 ### Edge Cases
+
+- same_name_file - > tests files in different directories
+- nine, eight, seven... -> tests files within each each other (subfiles) recursively
+- emptyfile -> tests files with no words
+- file does not exist/cannot open -> error in words.c write() method when fd = -1
+- same_name_file.txt and all_test_cases/same_name_file.txt
 
 //same_name_file - > tests files in different directories
 // nine, eight, seven... -> tests files within each each other (subfiles) recursively
