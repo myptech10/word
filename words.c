@@ -133,101 +133,73 @@ int hasReadPerms(char* file_name) {
 
 // }
 
+char* save_word(char* word_buffer, int* p_word_index, int* p_size_word_buffer) {
+    word_buffer[*p_word_index] = '\0';
+    insertHash(word_buffer);
+    free(word_buffer);
+    *p_word_index = 0;
+    *p_size_word_buffer = 10;
+    return malloc(*p_size_word_buffer);
+}
+
 void count_words(char* file_name) {
     anyValidFiles = 1;
 
+    char separators[] = {' ', '.', '\n', '\t', ';', '!', ':', '?', ',', '"', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '(', ')', '@', '#', '$', '%', '^', '&', '*', '<', '>', '[', ']', '|', '/', '\\', '{', '}'};
     int fd;
-    
-    char buffer;
-    // int size_word_buffer = 1;
-    // int wordIndex = 0;
-    // ssize_t bytes_read;  // number of characters/bytes read 
-    // char* store_word = NULL;
+    char char_buffer;
+    int size_word_buffer = 10;
+    int wordIndex = 0;
+    char* word_buffer = malloc(size_word_buffer);
+    int last_char_was_hyphen = 0;
 
     fd = open(file_name, O_RDONLY);
     if (fd == -1) {
         perror("Error opening file");
-        return 1;
     }
 
     while (1) {
-        int status = read(fd, &buffer, 1);
+        int status = read(fd, &char_buffer, 1);
         if (status > 0) {
-            printf("%c\n", buffer);
+            int isSeparator = 0;
+            for(int i = 0; i < sizeof(separators)/sizeof(char); i++) {
+                if(char_buffer == separators[i]) {
+                    isSeparator = 1;
+                }
+            }
+            printf("%c, isSeparator: %d\n", char_buffer, isSeparator); // debug
+
+            if(!isSeparator) {
+                if(wordIndex <= size_word_buffer - 3) {
+                    size_word_buffer *= 2;
+                    word_buffer = realloc(word_buffer, size_word_buffer);
+                }
+                if(char_buffer == '-') {
+                    last_char_was_hyphen = 1;
+                    if(last_char_was_hyphen) {
+                        if(wordIndex > 0) {
+                            word_buffer = save_word(word_buffer, &wordIndex, &size_word_buffer);
+                            last_char_was_hyphen = 0;
+                        }
+                    }
+                }
+                word_buffer[wordIndex] = char_buffer;
+                wordIndex++;
+            } else if (isSeparator && wordIndex > 0){
+                word_buffer = save_word(word_buffer, &wordIndex, &size_word_buffer);
+            }
         } else if (status == 0) {
+            if(wordIndex > 0) {
+                word_buffer = save_word(word_buffer, &wordIndex, &size_word_buffer);
+            }
             break;
         } else if (status < 0) {
-            break;
+            perror("read failed"); // change to write
         }
     }
 
+    free(word_buffer);
     close(fd);
-
-    // while ((bytes_read = read(fd, buffer, 1024)) > 0) {
-        
-    //     store_word = malloc(size_word_buffer);
-
-    //     for (int i = 0; i < bytes_read; i++) {
-            
-    //         char separators[] = {' ', '.', '\n', '\t', ';', '!', ':', '?', ',', '"', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '(', ')', '@', '#', '$', '%', '^', '&', '*', '<', '>', '[', ']', '|', '/', '\\', '{', '}'};
-    //         int isSeparator = 0;
-    //         for(int j = 0; j < sizeof(separators)/sizeof(char); j++) {
-    //             if(buffer[i] == separators[j]) {
-    //                 isSeparator = 1;
-    //             }
-    //         }
-                    
-    //         if (!isSeparator) {
-    //             //printf( "%c",  buffer[i]); // debug
-    //             if (buffer[i] == '-') {
-    //                 if(i != bytes_read - 1 && buffer[i+1] == '-') {
-    //                     i++;
-    //                 }
-                    
-    //                 store_word[wordIndex] = '\0'; // Null-terminate the word
-    //                 insertHash(store_word);
-    //                 free(store_word);
-    //                 size_word_buffer = 1;
-    //                 store_word = malloc(size_word_buffer);
-
-    //                 //printf("Wordssss: %s\n", store_word); // debug
-    //                 wordIndex = 0;
-    //             } else {
-    //                 //store character in array
-    //                 if(wordIndex >= size_word_buffer - 10) {
-    //                     size_word_buffer *= 2;
-    //                     store_word = (char*)realloc(store_word, size_word_buffer);
-    //                 }
-    //                 store_word[wordIndex] = buffer[i];
-    //                 store_word[wordIndex + 1] = '\0';
-    //                 free(store_word);
-    //                 size_word_buffer = 1;
-    //                 store_word = malloc(size_word_buffer);                     
-    //                 wordIndex++;     
-    //             } 
-    //         } else { //a weird character 
-    //             if (wordIndex > 0) {
-    //                 store_word[wordIndex] = '\0'; // Null-terminate the word
-    //                 insertHash(store_word);
-    //                 free(store_word);
-    //                 size_word_buffer = 1;
-    //                 store_word = malloc(size_word_buffer);
-    //                 wordIndex = 0;
-    //             }
-    //         }
-
-
-    //     }
-
-        
-    // }
-
-
-    // if (wordIndex > 0) {
-    //     store_word[wordIndex] = '\0';
-    //     // printf("Word: %s\n", store_word);
-    //     insertHash(store_word);
-    // }
 }
 void recurseDirectory(char* file_name) {
     if (chdir(file_name) != 0) {
