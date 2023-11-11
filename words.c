@@ -181,7 +181,7 @@ int count_words(char* file_name) {
 
                 else{
                 //store character in array
-                 store_word = (char*)realloc(store_word, wordIndex + 2);  
+                store_word = (char*)realloc(store_word, wordIndex + 2);
                 store_word[wordIndex] = buffer[i];
                 store_word[wordIndex + 1] = '\0'; 
                 wordIndex++;     
