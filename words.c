@@ -20,7 +20,7 @@ typedef struct _Node {
 static Node* hash_table[HASH_TABLE_SIZE] = {NULL};
 static int anyValidFiles = 0;
 static int anyWordsRead = 0;
- 
+
 
 //HASH FUNCTION
 unsigned int hash(char* word) {
@@ -57,17 +57,26 @@ void insertHash(char* word) {
 void displaySortedWords() {
     int anyNodesLeft = 0;
     Node* current;
-
-    for (int i = 0; i < HASH_TABLE_SIZE; i++) {
-        current = hash_table[i];
-        while (current != NULL) {
-            char buffer[sizeof(current->word)+sizeof(int)+10];
-            int len = snprintf(buffer, sizeof(buffer), "%s -> %d\n", current->word, current->freq);
-            write(STDOUT_FILENO, buffer, sizeof(current->word)+sizeof(int)+5);
-            current = current->next;            
-        }
+    Node* max = hash_table[0];
+    
+    int i = 1;
+    while(max == NULL) {
+        max = hash_table[i];
+        i++;
     }
+    printf(i);
+    
+    for (int i = 0; i < HASH_TABLE_SIZE; i++) {
+        Node* current = hash_table[i];
+        while (current != NULL) {
+            //if(current->)
+            current = current->next;
+        }
+        char buffer[1024];
+        int len = snprintf(buffer, sizeof(buffer), "%s -> %d\n", current->word, current->freq);
+        write(STDOUT_FILENO, buffer, len);
 
+    }
 
     // //printf("%s -> %d\n", current->word, current->freq);
     // current = current->next;
@@ -330,7 +339,6 @@ int main(int argc, char* argv[]) {
     if (anyValidFiles) {
         if (anyWordsRead) {
             // sort and print output
-            printf("\n");
             displaySortedWords();
             return 0;
         } else {
