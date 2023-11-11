@@ -55,23 +55,23 @@ void insertHash(char* word) {
 }
 
 void displaySortedWords() {
-    int anyNodesLeft = 1;
+    int anyNodesLeft = 0;
     Node* current;
 
-    // while(anyNodesLeft) {
-        
-    // }
-
     for (int i = 0; i < HASH_TABLE_SIZE; i++) {
-        Node* current = hash_table[i];
+        current = hash_table[i];
         while (current != NULL) {
-            char buffer[1024];
+            char buffer[sizeof(current->word)+sizeof(int)+10];
             int len = snprintf(buffer, sizeof(buffer), "%s -> %d\n", current->word, current->freq);
-            write(STDOUT_FILENO, buffer, len);
-            //printf("%s -> %d\n", current->word, current->freq);
-            current = current->next;
+            write(STDOUT_FILENO, buffer, sizeof(current->word)+sizeof(int)+5);
+            current = current->next;            
         }
     }
+
+
+    // //printf("%s -> %d\n", current->word, current->freq);
+    // current = current->next;
+
 }
 
 int fileExists(char* file_name) {
@@ -151,7 +151,8 @@ void count_words(char* file_name) {
     int size_word_buffer = 10;
     int wordIndex = 0;
     char* word_buffer = malloc(size_word_buffer);
-    int last_char_was_hyphen = 0;
+    enum char_type {NOTHING, HYPHEN, REGULAR, APOSTROPHE, DELIMITER};
+    enum char_type prev = NOTHING;
 
     fd = open(file_name, O_RDONLY);
     if (fd == -1) {
@@ -167,29 +168,64 @@ void count_words(char* file_name) {
                     isSeparator = 1;
                 }
             }
-            printf("%c, isSeparator: %d\n", char_buffer, isSeparator); // debug
+            //printf("%c, isSeparator: %d\n", char_buffer, isSeparator); // debug
 
             if(!isSeparator) {
-                if(wordIndex <= size_word_buffer - 3) {
+                if(wordIndex == size_word_buffer - 2) {
                     size_word_buffer *= 2;
                     word_buffer = realloc(word_buffer, size_word_buffer);
                 }
                 if(char_buffer == '-') {
-                    last_char_was_hyphen = 1;
-                    if(last_char_was_hyphen) {
+                    if(prev == HYPHEN) {
+                        if(wordIndex > 0) {
+                            wordIndex--;
+                            word_buffer = save_word(word_buffer, &wordIndex, &size_word_buffer);
+                        }
+                        prev = DELIMITER;
+                    } else if (prev == DELIMITER || prev == NOTHING) {
+                        prev = HYPHEN;
+                    } else if (prev == REGULAR) {
+                        word_buffer[wordIndex] = char_buffer;
+                        wordIndex++;
+                        prev = HYPHEN;
+                    } else if (prev == APOSTROPHE) {
+                        word_buffer[wordIndex] = char_buffer;
+                        wordIndex++;
+                        prev = HYPHEN;
+                    }
+                } else if (char_buffer == '\'') {
+                    if(prev == HYPHEN) {
+                        while(wordIndex > 0 && word_buffer[wordIndex - 1] == '-') {
+                            wordIndex--;
+                        }
                         if(wordIndex > 0) {
                             word_buffer = save_word(word_buffer, &wordIndex, &size_word_buffer);
-                            last_char_was_hyphen = 0;
                         }
                     }
+                    word_buffer[wordIndex] = char_buffer;
+                    wordIndex++;
+                    prev = APOSTROPHE;
+                } else {
+                    word_buffer[wordIndex] = char_buffer;
+                    wordIndex++;
+                    prev = REGULAR;
                 }
-                word_buffer[wordIndex] = char_buffer;
-                wordIndex++;
             } else if (isSeparator && wordIndex > 0){
+                if(prev == HYPHEN) {
+                    while(wordIndex > 0 && word_buffer[wordIndex - 1] == '-') {
+                        wordIndex--;
+                    }
+                }
                 word_buffer = save_word(word_buffer, &wordIndex, &size_word_buffer);
+                prev = DELIMITER;
             }
         } else if (status == 0) {
             if(wordIndex > 0) {
+                if(prev == HYPHEN) {
+                    while(word_buffer[wordIndex - 1] == '-') {
+                        wordIndex--;
+                    }
+                }
                 word_buffer = save_word(word_buffer, &wordIndex, &size_word_buffer);
             }
             break;
@@ -201,6 +237,7 @@ void count_words(char* file_name) {
     free(word_buffer);
     close(fd);
 }
+
 void recurseDirectory(char* file_name) {
     if (chdir(file_name) != 0) {
         char error_message[256];
@@ -225,12 +262,13 @@ void recurseDirectory(char* file_name) {
                 continue;
             } else {
                 if (isDirectory(current_file->d_name) && hasReadPerms(current_file->d_name)) {
-                    char buffer[1024];
-                    int len = snprintf(buffer, sizeof(buffer), "dir %s\n", current_file->d_name);
-                    write(STDOUT_FILENO, buffer, len); // Replace printf with write
+                    //debug
+                    //char* buffer;
+                    // int len = snprintf(buffer, sizeof(buffer), "dir %s\n", current_file->d_name);
+                    // write(STDOUT_FILENO, buffer, len); // Replace printf with write
                     recurseDirectory(current_file->d_name);
                 } else if (isTextFile(current_file->d_name) && hasReadPerms(current_file->d_name)) {
-                    char buffer[1024];
+                    char buffer[sizeof(current_file->d_name)];
                     int len = snprintf(buffer, sizeof(buffer), "%s\n", current_file->d_name);
                     write(STDOUT_FILENO, buffer, len); // Replace printf with write
                     count_words(current_file->d_name);
@@ -250,30 +288,32 @@ void recurseDirectory(char* file_name) {
     if (closedir(current_dir) != 0) {
         char error_message[256];
         int len = snprintf(error_message, sizeof(error_message), "Error: Cannot close directory %s: %s\n", file_name, strerror(errno));
+        write(STDERR_FILENO, error_message, len);
     }
 
     if (chdir("..") != 0) {
         char error_message[256];
         int len = snprintf(error_message, sizeof(error_message), "Error: Cannot move out of directory %s: %s\n", file_name, strerror(errno));
         write(STDERR_FILENO, error_message, len);
-
     }
 }
 
 int main(int argc, char* argv[]) {
     for (int i = 1; i < argc; i++) {
-        char buffer[1024];
-        int len = snprintf(buffer, sizeof(buffer), "Argument %d: %s\n", i, argv[i]);
-        write(STDOUT_FILENO, buffer, len); 
+        // debug
+        // char* buffer;
+        // int len = snprintf(buffer, sizeof(argv[i]), "Argument %d: %s\n", i, argv[i]);
+        // write(STDOUT_FILENO, buffer, len); 
 
         if (fileExists(argv[i])) {
             if (isDirectory(argv[i]) && hasReadPerms(argv[i])) {
-                char dir_message[1024];
-                int dir_len = snprintf(dir_message, sizeof(dir_message), "dir %s\n", argv[i]);
-                write(STDOUT_FILENO, dir_message, dir_len); 
+                // debug
+                // char* dir_message;
+                // int dir_len = snprintf(dir_message, sizeof(dir_message), "dir %s\n", argv[i]);
+                // write(STDOUT_FILENO, dir_message, dir_len); 
                 recurseDirectory(argv[i]);
             } else if (hasReadPerms(argv[i])) {
-                char file_message[1024];
+                char file_message[sizeof(argv[i])];
                 int file_len = snprintf(file_message, sizeof(file_message), "%s\n", argv[i]);
                 write(STDOUT_FILENO, file_message, file_len); 
                 count_words(argv[i]);
